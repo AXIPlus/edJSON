@@ -1,0 +1,35 @@
+//first comment
+{  //comment1
+    //comment 2 --- f asdf!!@#$
+    "list-of-programs-with-a-special-char\"" 
+    
+    //coment
+    : { 
+          //comment 3 
+        "program one": {
+            "path": "/this/is/a/\"path\"/to/app"
+               ,  //path to application
+            "nr": 3.3,
+            "array": [[[[["obj0A",{"obj0B": "abc", "obj0C": "bcd"}
+                        ],
+                       ["obj1A",{"obj1B": "abc","obj0C": "bcd"}],"doi", "trei"],53]
+                     ],
+                        "-d", //comment 4 in line with array
+                        32, 
+                        "-v2", 
+                        true, 
+                        3.1415
+                    ], 
+                        
+            "autorestart": true,
+            "string1": "value 1 with a special char\\",
+            "string2": "value 2"
+        },
+
+        "program-two": {
+            "path": "/bin/ls",
+            "args": ["."],
+            "run-now": true
+        }
+    }
+}
