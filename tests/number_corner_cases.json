@@ -1,0 +1,11 @@
+{
+    "double big negative exponent": [123.456e-789],
+    "bi exponent": [0.4e0066999999999999999999999006],
+    "negative int big exponent": [-1e+9999],
+    "positive double big exponent": [1.5e+9999],
+    "real negative overflow": [-123123e100000],
+    "real positive overflow": [123123e100000],
+    "real underflow": [123e-10000000],
+    "big negative int": [-237462374673276894279],
+    "big positive int": [100000000000000000000] 
+}

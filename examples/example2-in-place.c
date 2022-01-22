@@ -35,12 +35,17 @@ int on_value_inplace(const edJSON_path_t *path, size_t path_size, edJSON_value_t
 
     for(size_t i = 0; i < path_size; i++) {
         if(path[i].index < 0) {
-            int rc = edJSON_string_unescape((char *)path[i].value, path[i].value_size, path[i].value, path[i].value_size);
-            if(rc < 0) {
-                printf("error on edJSON_string_unescape\n");
-                return rc; //stop parsing
+            if(path[i].value_size > 0) {
+                int rc = edJSON_string_unescape((char *)path[i].value, path[i].value_size, path[i].value, path[i].value_size);
+                if(rc < 0) {
+                    printf("error on edJSON_string_unescape\n");
+                    return rc; //stop parsing
+                }
+                printf("/%s", path[i].value);
             }
-            printf("/%s", path[i].value);            
+            else {
+                printf("/");
+            }
         }
         else {
             int rc = snprintf(pv, 128, "[%d]", path[i].index);
@@ -70,6 +75,9 @@ int on_value_inplace(const edJSON_path_t *path, size_t path_size, edJSON_value_t
     }
     else if(value.value_type == EDJSON_VT_BOOL) {
         printf("%d", value.value.boolean);
+    }
+    else if(value.value_type == EDJSON_VT_NULL) {
+        printf("null");
     }
     printf("\n");
 

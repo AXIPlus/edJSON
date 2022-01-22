@@ -128,6 +128,15 @@ int edJSON_build_path_string(char *dest, size_t dest_size, const edJSON_path_t *
 - return value is either positive for success, representing the number of characters (excluding the null-character) written in **dest**, or a negative value (see return codes) if an error occured (EDJSON_ERR_NO_MEMORY, EDJSON_ERR_NO_INPUT or EDJSON_ERR_BAD_STRING).
 
 ## Release notes
+
+### version 1.1.0
+- bug fixes
+- added support for null
+- added support for array-only json
+- added support for \u-escaped values to be unescaped as UTF-8
+- added support for exp numbers
+- testing done more thoroughly
+
 ### version 1.0.0
 - initial release
 - not yet supported: null, \u-escaped values, pure-array JSON

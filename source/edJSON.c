@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 typedef enum {
     edJSON_STATE_PARSE_BEGIN = 0,
@@ -68,7 +69,7 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                 }
                 else if(json[i] == '/') {
                     i++;
-                    if(json[i] == '/') {
+                    if((json[i] != 0) && (json[i] == '/')) {
                         top++;
                         if(top < path_max_depth) {
                             path_mem[top]._prev = state;
@@ -93,6 +94,17 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                         return EDJSON_ERR_NO_MEMORY;
                     }
                 }
+                else if(json[i] == '[') {
+                    state = edJSON_STATE_IN_ARRAY;
+
+                    if(top < path_max_depth) {
+                        path_mem[top]._prev = state;
+                    }
+                    else {
+                        return EDJSON_ERR_NO_MEMORY;
+                    }
+                    break;
+                }
             } break;
                 
             case edJSON_STATE_IN_COMMENT:
@@ -103,12 +115,12 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                 break;
 
             case edJSON_STATE_IN_OBJECT:
-                if(!strchr("\r\n\t/ \"}", json[i])) {
+                if(!strchr("\n\b\r\t\"/} ", json[i])) {
                     return i + 1;
                 }
                 else if(json[i] == '/') {
                     i++;
-                    if(json[i] == '/') {
+                    if((json[i] != 0) && (json[i] == '/')) {
                         top++;
                         if(top < path_max_depth) {
                             path_mem[top]._prev = state;
@@ -147,19 +159,29 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
             case edJSON_STATE_IN_OBJECT_NAME:
                 if(json[i] == '\\') {
                     i++;
-                    path_mem[top].value_size++;
                     if(json[i] != 0) {
-                        if(!strchr("\"\\", json[i])) {
+                        if(json[i] == 'u') {
+                            i++;
+                            size_t val = 0;
+                            while((val < 4) && (json[i] != 0)) {
+                                if(!strchr("0123456789ABCDEFabcdef", json[i])) {
+                                    return i + 1;
+                                }
+                                i++;
+                                val++;
+                            }
+                            i--;
+                        }
+                        else if(!strchr("\"\\/ubfnrt", json[i])) {
                             return i + 1;
                         }
                     }
                 }
-                else if(json[i] == '\"') {
-                    path_mem[top].value_size--;
+                else if(json[i] == '"') {
+                    path_mem[top].value_size = json + i - path_mem[top].value;
                     state = edJSON_STATE_FIND_COLON;
                 }
 
-                path_mem[top].value_size++;
                 break;
 
             case edJSON_STATE_FIND_COLON:
@@ -168,7 +190,7 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                 }
                 else if(json[i] == '/') {
                     i++;
-                    if(json[i] == '/') {
+                    if((json[i] == '/') && (json[i] != 0)) {
                         top++;
                         if(top < path_max_depth) {
                             path_mem[top]._prev = state;
@@ -189,12 +211,12 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                 break;
 
             case edJSON_STATE_FIND_VALUE:
-                if(!strchr("\n\r\t /{[\"-0123456789tf", json[i])) {
+                if(!strchr("\n\r\t /{[\"-0123456789tfn", json[i])) {
                     return i + 1;
                 }
                 else if(json[i] == '/') {
                     i++;
-                    if(json[i] == '/') {
+                    if((json[i] == '/') && (json[i] != 0)) {
                         top++;
                         if(top < path_max_depth) {
                             path_mem[top]._prev = state;
@@ -235,7 +257,7 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                     }
                     break;
                 }
-                else if(strchr("\"-tf0123456789", json[i])) {
+                else if(strchr("\"-ntf0123456789", json[i])) {
                     state = edJSON_STATE_IN_VALUE;
                     continue;
                 }
@@ -247,7 +269,7 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                 }
                 else if(json[i] == '/') {
                     i++;
-                    if(json[i] == '/') {
+                    if((json[i] == '/') && (json[i] != 0)) {
                         top++;
                         if(top < path_max_depth) {
                             path_mem[top]._prev = state;
@@ -290,12 +312,12 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                 break;
 
             case edJSON_STATE_IN_ARRAY: {      
-                if(!strchr("\n\r\t /{[\"]-+tf0123456789", json[i])) {
+                if(!strchr("\n\r\t\\ /{[\"]-+ntf0123456789", json[i])) {
                     return i + 1;
                 }
                 else if(json[i] == '/') {
                     i++;
-                    if(json[i] == '/') {
+                    if((json[i] == '/') && (json[i] != 0)) {
                         top++;
                         if(top < path_max_depth) {
                             path_mem[top]._prev = state;
@@ -344,7 +366,7 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                     path_mem[top].value = 0;
                     top--;
                 }
-                else if(strchr("\"-+tf0123456789", json[i])) {
+                else if(strchr("\"-+ntf0123456789", json[i])) {
                     state = edJSON_STATE_IN_VALUE;
                     path_mem[top].index++;
                     continue;
@@ -357,11 +379,27 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                     i++;
                     val.value.string.value = json + i;
                     val.value.string.value_size = i;
+
                     while((json[i] != 0) && (json[i] != '"')) {
+                        if(json[i] == '\n') {
+                            return i + 1;
+                        }
                         if(json[i] == '\\') {
                             i++;
-                            if((json[i] != '\\') && (json[i] != '"')) {
+                            if(!strchr("\"\\/ubfnrt", json[i])) {
                                 return i + 1;
+                            }
+                            if(json[i] == 'u') {
+                                i++;
+                                size_t val = 0;
+                                while((val < 4) && (json[i] != 0)) {
+                                    if(!strchr("0123456789ABCDEFabcdef", json[i])) {
+                                        return i + 1;
+                                    }
+                                    i++;
+                                    val++;
+                                }
+                                i--;
                             }
                         }
                         i++;
@@ -396,18 +434,77 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
                     i--;
                     val.value.boolean = false;
                 }
+                else if(json[i] == 'n') {
+                    val.value_type = EDJSON_VT_NULL;
+                    char n[] = "null";
+                    int j = 0;
+                    while(n[j]) {
+                        if(json[i] != n[j]) {
+                            return i + 1;
+                        }
+                        j++;
+                        i++;
+                    }
+                    i--;
+                }
                 else {
                     val.value_type = EDJSON_VT_INTEGER;
                     int nrc = 0;
                     char nr[32];
-                    while((json[i] != 0) && strchr(".0123456789", json[i])) {
+                    bool b[3] = {0, 0, 0};
+                    while((json[i] != 0) && strchr(".Ee+-0123456789", json[i])) {
                         if(nrc >= 32) {
                             return i + 1;
+                        }    
+                        if((json[i] == '+') || (json[i] == '-')) {
+                            nr[nrc++] = json[i];
+                            i++;
+                            if(!strchr("0123456789", json[i])) {
+                                return i + 1;
+                            }
                         }
                         nr[nrc++] = json[i];
                         i++;
-                        if(json[i] == '.') {
+                        if(strchr(".eE+-", json[i])) {
                             val.value_type = EDJSON_VT_DOUBLE;
+                            if(json[i] == '.') {
+                                if((b[0] == 1) || (b[1] == 1)){
+                                    return i + 1;
+                                }
+                                else {
+                                    b[0] = 1;
+                                }
+                                nr[nrc++] = json[i];
+                                i++;
+                                if(!strchr("0123456789",json[i])) {
+                                    return i + 1;
+                                }
+                            }
+                            if((json[i] == 'e') || (json[i] == 'E')) {
+                                if(b[1] == 1){
+                                    return i + 1;
+                                }
+                                else {
+                                    b[1] = 1;
+                                    nr[nrc++] = json[i];
+                                    i++;
+                                    if((json[i] == '+') || (json[i] == '-')) {
+                                        if(b[2] == 1) {
+                                            return i + 1;
+                                        }
+                                        else {
+                                            b[2] = 1;
+                                            continue;
+                                        }
+                                    }
+                                    if(!strchr("0123456789",json[i])) {
+                                        return i + 1;
+                                    }
+                                }
+                            }
+                            if((json[i] == '+') || (json[i] == '-')) {
+                                return i + 1;
+                            }
                         }
                     }
                     nr[nrc] = 0;
@@ -460,7 +557,7 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
 }
 
 int edJSON_string_unescape(char *dest, size_t dest_size, const char *source, size_t source_size) {
-    if((dest == 0) || (source == 0) || (dest_size == 0) || (source_size == 0)) {
+    if((dest == 0) || (source == 0) || (dest_size == 0)) {
         return EDJSON_ERR_NO_INPUT;
     }
 
@@ -504,6 +601,115 @@ int edJSON_string_unescape(char *dest, size_t dest_size, const char *source, siz
                     dest[di++] = '\f';
                     break;
 
+                case 'u': {
+                    uint32_t x = 0;
+                    uint32_t unicode = 0;
+                    uint8_t i = 0;
+                    while((si < source_size) && (i < 4)) {
+                        x *= 16;
+                        if((source[si] >= '0') && (source[si] <= '9')) {
+                            x += source[si] - '0';
+                        }
+                        else if((source[si] >= 'a') && (source[si] <= 'f')) {
+                            x += source[si] - 'a' + 10;
+                        }
+                        else if((source[si] >= 'A') && (source[si] <= 'F')) {
+                            x += source[si] - 'A' + 10;
+                        }
+                        else {
+                            return EDJSON_ERR_BAD_STRING;
+                        }
+                        si++;
+                        i++;
+                    }
+
+                    unicode = x;
+                    if(unicode >= 0xD800) {
+                        unicode -= 0xD800;
+                        unicode *= 0x400;
+
+                        //do another round
+                        if(source_size - si < 2) {
+                            return EDJSON_ERR_BAD_STRING;
+                        }
+
+                        if(source[si++] != '\\') {
+                            return EDJSON_ERR_BAD_STRING;
+                        }
+                        if(source[si++] != 'u') {
+                            return EDJSON_ERR_BAD_STRING;
+                        }
+
+                        x = 0;
+                        i = 0;
+                        while((si < source_size) && (i < 4)) {
+                            x *= 16;
+                            if((source[si] >= '0') && (source[si] <= '9')) {
+                                x += source[si] - '0';
+                            }
+                            else if((source[si] >= 'a') && (source[si] <= 'f')) {
+                                x += source[si] - 'a' + 10;
+                            }
+                            else if((source[si] >= 'A') && (source[si] <= 'F')) {
+                                x += source[si] - 'A' + 10;
+                            }
+                            else {
+                                return EDJSON_ERR_BAD_STRING;
+                            }
+                            si++;
+                            i++;
+                        }
+                        if(x < 0xDC00) {
+                            return EDJSON_ERR_BAD_STRING;
+                        }
+
+                        x -= 0xDC00;
+                        unicode += x;
+                        unicode += 0x10000;
+                    }
+
+                    //now convert unicode to UTF-8
+                    if(unicode < 0x80) {
+                        if(di >= dest_size) {
+                            return EDJSON_ERR_NO_MEMORY;
+                        }
+                        dest[di++] = unicode & 0xFF;
+                    }
+                    else if(unicode < 0x800) {
+                        if((di + 2) >= dest_size) {
+                            return EDJSON_ERR_NO_MEMORY;
+                        }
+                        dest[di++] = 0xC0 + ((unicode & 0x3C0) >> 6);
+                        if((uint8_t)dest[di - 1] < 0xC3) {
+                            return EDJSON_ERR_BAD_STRING;
+                        }
+
+                        dest[di++] = 0x80 + (unicode & 0x3F);
+                    }
+                    else if(unicode < 0x10000) {
+                        if((di + 3) >= dest_size) {
+                            return EDJSON_ERR_NO_MEMORY;
+                        }
+                        dest[di++] = 0xE0 + ((unicode & 0xF000) >> 12);
+                        dest[di++] = 0x80 + ((unicode & 0xFC0) >> 6);
+                        dest[di++] = 0x80 + (unicode & 0x3F);
+                    }
+                    else if(unicode < 0x110000) {
+                        if((di + 4) >= dest_size) {
+                            return EDJSON_ERR_NO_MEMORY;
+                        }
+                        dest[di++] = 0xF0 + ((unicode & 0x1C0000) >> 18);
+                        dest[di++] = 0x80 + ((unicode & 0x3F000) >> 12);
+                        dest[di++] = 0x80 + ((unicode & 0xFC0) >> 6);
+                        dest[di++] = 0x80 + (unicode & 0x3F);
+                    }
+                    else {
+                        return EDJSON_ERR_BAD_STRING;
+                    }
+                    
+                    
+                } break;                
+
                 default:
                     return EDJSON_ERR_BAD_STRING;
                     break;
@@ -519,7 +725,7 @@ int edJSON_string_unescape(char *dest, size_t dest_size, const char *source, siz
 }
 
 int edJSON_build_path_string(char *dest, size_t dest_size, const edJSON_path_t *path, size_t path_size) {
-    if((dest == 0) || (path == 0) || (dest_size == 0) || (path_size == 0)) {
+    if((dest == 0) || (path == 0) || (dest_size == 0)) {
         return EDJSON_ERR_NO_INPUT;
     }
 

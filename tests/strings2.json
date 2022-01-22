@@ -1,0 +1,28 @@
+{
+    "string unicode": ["\uDADA"],
+    "invalid sequence": ["日ш�"],
+    //"string unicode2": ["\uD888\u1234"]
+    // "string backslash": ["\"]
+    // "escaped backslash": ["\\\"]
+    // "escaped ctrl char tab": ["\	"]
+    // "escaped emoji": ["\🌀"]
+    // "incomplete escaped character": ["\u00A"]
+    // "incomplete surrogate": ["\uD834\uDd"] 
+    "incomplete surrogate escape invalid": ["\uD800\uD800\x"],
+    // "invalid backslash": ["\a"]
+    // "invalid unicode escape": ["\uqqqq"]
+    // "uescaped space": [\u0020"asd"]
+    // "no quotes with bad escape": [\n]
+    // "single doublequote": "
+    // "unescaped newline": ["new
+    // line"],
+    // "unescaped tab": ["	"]
+    // "unicode capital u": "\UA66D"
+
+    "allowed escapes in sring":["\"\\\/\b\f\n\r\t"],
+    "string comments": ["a/*b*/c/*d//e"],
+    "double escape a": ["\\a"],
+    "escaped noncharacter": ["\uFFFF"],
+    "nl": ["new\u00A0line"],
+    "string pi": ["π"]
+}

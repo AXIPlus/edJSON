@@ -58,6 +58,9 @@ int on_value(const edJSON_path_t *path, size_t path_size, edJSON_value_t value) 
     else if(value.value_type == EDJSON_VT_BOOL) {
         printf("%d", value.value.boolean);
     }
+    else if(value.value_type == EDJSON_VT_NULL) {
+        printf("null");
+    }
     printf("\n");
 
     return 0;

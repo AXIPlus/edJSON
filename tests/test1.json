@@ -1,5 +1,5 @@
 //first comment
-{  //comment1
+[{  //comment1
     //comment 2 --- f asdf!!@#$
     "list-of-programs-with-a-special-char\"" 
     
@@ -7,9 +7,9 @@
     : { 
           //comment 3 
         "program one": {
-            "path": "/this/is/a/\"path\"/to/app"
+            "path": "/this/is/a/\"path\"/to/app\u00425" //should output "...appB5"
                ,  //path to application
-            "nr": 3.3,
+            "nr": 3.3, 
             "array": [[[[["obj0A",{"obj0B": "abc", "obj0C": "bcd"}
                         ],
                        ["obj1A",{"obj1B": "abc","obj0C": "bcd"}],"doi", "trei"],53]
@@ -18,12 +18,21 @@
                         32, 
                         "-v2", 
                         true, 
-                        3.1415
+                        3.1415,
+                        null,
+                        0.2017,
+                        1134.52E-6
                     ], 
                         
             "autorestart": true,
             "string1": "value 1 with a special char\\",
-            "string2": "value 2"
+            "string2": "value 2",
+            "string with utf8": "日ш�🌀🌀",
+            "empty key": {"":0},
+            "null val": null,
+            "music symbol (U+1D11E) with extra A":"\uD834\uDD1E next A: \u0041",
+            "smile escape in name \u0043 si apoi ceva": "should be C",
+            "smiley face in name and val \uD83D\uDE00": "\uD83D\uDE00"
         },
 
         "program-two": {
@@ -32,4 +41,5 @@
             "run-now": true
         }
     }
-}
+
+}]

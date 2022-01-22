@@ -32,7 +32,7 @@
  * 
  * Current version of edJSON library
  * */
-#define EDJSON_VERSION      "1.0.0"
+#define EDJSON_VERSION      "1.1.0"
 
 /**
  * @brief Path array element.
@@ -58,6 +58,7 @@ typedef struct {
         EDJSON_VT_STRING,       /**< Returned value is a string. */
         EDJSON_VT_DOUBLE,       /**< Returned value is a double. */
         EDJSON_VT_BOOL,         /**< Returned value is a boolean. */
+        EDJSON_VT_NULL,         /**< Returned value is null. */
     } value_type;               /**< Returned value type. */
 
     union {
@@ -117,6 +118,7 @@ int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_dept
  * @brief Unescape a string returned through the JSON event callback. Can be either a path element or a string value.
  * 
  * Function unescapes a JSON path or value returned string.
+ * All unescaped unicodes are converted to UTF-8.
  * It replaces all escaped characters and adds a null-termination on the string.
  * If dest is the same as source, unescaping is done in-place. This is an optimization for doing on the same memory as JSON (json will be trashed in the end).
  * If function fails dest is changed anyhow.

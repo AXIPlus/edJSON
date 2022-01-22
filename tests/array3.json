@@ -1,0 +1,29 @@
+{
+    // "array withouth commsa": [1 true],
+    // "colon instead of comma": ["": 1],
+    // "coma and number": [,1]
+    "double comma": [1,,2],
+    // "double extra comma": ["x",,]
+    // "extra close": ["x"]]
+    // "incomplete": ["x"
+    // "invalid value": [x]
+    // "inner array no comma": [3[4]]
+    // "array value just -": [+]
+    // "invalid value": ["a"\f]
+    // "star value": [*]
+    // "unclosed with new lines": [1,
+    //     1
+    //     ,1
+    // "incomplete false": [fals]
+    // "incomplete true": [tru]
+    // "incomplete null": [nul]
+
+    "heterogeneous array": [null, 1, "1", {}],
+    "null": [null],
+    "with nl": [1
+    ],
+    "with leading space":   [1],
+    "with several null": [1,null,null,null,2]
+    
+
+}

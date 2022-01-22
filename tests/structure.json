@@ -1,0 +1,13 @@
+{
+    // "array with extra close": [1]]
+    // "array with unclosed string": "asd]
+    // "capitalize True": True
+    // "closed unopened array": 1]
+    // "double array": [][]
+    // "extra closing object": {}}
+    // "object unclosed no value": {"":
+    // "object with garbage": {"a": true} "x"
+    // "invalide close object": {]
+    // "open open": ["\{["\{["\{["\{
+    
+}
