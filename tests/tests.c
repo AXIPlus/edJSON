@@ -40,7 +40,7 @@ int test(const char *filename) {
 
     edJSON_path_t path_buffer[16];
 
-    int result = edJSON_parse(json, path_buffer, 16, 0);
+    int result = edJSON_parse(json, path_buffer, 16, 0, 0);
     if(strcmp(json, json_copy) != 0) {
         return -2;
     }

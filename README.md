@@ -30,7 +30,7 @@ edJSON is so small that it's always best to just include the two source files (*
 ### Parsing
 Parsing is done by the edJSON_parse() function:
 ```
-int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_depth, edJSON_cb_t jsonEvent);
+int edJSON_parse(const char *json, edJSON_path_t *path_mem, size_t path_max_depth, edJSON_cb_t jsonEvent, void *private);
 ```
 
 Parser parameters are:
@@ -38,6 +38,7 @@ Parser parameters are:
 - **path_mem** - pointer to a pre-allocated (by the user) array in which the parser will put path information
 - **path_max_depth** - the size of the path_mem array; also corresponds to the maximum depth that the parser can move inside the JSON content; if the JSON content has more depth than this number, then **EDJSON_ERR_NO_MEMORY** is returned
 - **jsonEvent** - pointer to the user-defined callback which will be called by the parser whenever a value is found; if this pointer is null, no callback will be called; this is a special usage case and is used to validate the JSON content (return code will still have meaning).
+- **private** - private data to be passed to the callback, opaque to edJSON; user is responsible for manipulation
 
 Parser return codes are:
 - **EDJSON_SUCCESS** - successfuly parsed the JSON content
@@ -49,13 +50,14 @@ Parser return codes are:
 ### Event callback
 Event callback definition is the following:
 ```
-int edJSON_callback(const edJSON_path_t *path, size_t path_size, edJSON_value_t value);
+int edJSON_callback(const edJSON_path_t *path, size_t path_size, edJSON_value_t value, void *private);
 ```
 
 Through the callback, the parser sends the following parameters to the user:
 - **path** - an array of *edJSON_path_t* elements which will compose the current JSON path; see description of paths in  [Callback callback](#Callback-callback)
 - **path_size** - the number of elements in path - also reflects the current parsing depth
 - **value** - found value; see description of value [Callback value](#Callback-value)
+- **private** - private data passed to _parse()
 
 The callback expects the user to return an integer:
 - null (0) if the parser should continue to parse the JSON content
@@ -64,7 +66,7 @@ The callback expects the user to return an integer:
 ### Callback path
 The current path is provided by the parser to the user via the event callback (see [Event callback](#Event-callback)). It is provided as an array of path nodes, and a path node is described by the structure below.
 ```
-typedef struct {
+typedef struct edJSON_path_s {
     char _prev;             /**< internal data, do not use and do not modify. */
 
     int index;              /**< -1 if value is non-array, otherwise current array index. */
@@ -78,7 +80,7 @@ NOTE that the value string **IS ESCAPED**.
 ### Callback value
 The current value is provided by the parser to the user vla the event callback (see [Event callback](#Event-callback)). The value is represented by the structure below:
 ```
-typedef struct {
+typedef struct edJSON_value_s {
     enum {
         EDJSON_VT_INTEGER,      /**< Returned value is an integer. */
         EDJSON_VT_STRING,       /**< Returned value is a string. */
@@ -128,6 +130,9 @@ int edJSON_build_path_string(char *dest, size_t dest_size, const edJSON_path_t *
 - return value is either positive for success, representing the number of characters (excluding the null-character) written in **dest**, or a negative value (see return codes) if an error occured (EDJSON_ERR_NO_MEMORY, EDJSON_ERR_NO_INPUT or EDJSON_ERR_BAD_STRING).
 
 ## Release notes
+### version 1.1.1
+- code fix: added named structures and enumerations
+- added support for passing private data to the callback
 
 ### version 1.1.0
 - bug fixes

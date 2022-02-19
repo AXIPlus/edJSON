@@ -30,7 +30,9 @@
 /**
  * on_value_inplace - does in-place changes, then changes the content back to its original value
  * */
-int on_value_inplace(const edJSON_path_t *path, size_t path_size, edJSON_value_t value) {
+int on_value_inplace(const edJSON_path_t *path, size_t path_size, edJSON_value_t value, void *private) {
+    (void)private;
+
     char pv[128];
 
     for(size_t i = 0; i < path_size; i++) {
@@ -99,7 +101,7 @@ int main(int argc, char **argv) {
 
     edJSON_path_t path_buffer[16];
 
-    int result = edJSON_parse(json, path_buffer, 16, on_value_inplace);
+    int result = edJSON_parse(json, path_buffer, 16, on_value_inplace, 0);
     if(strcmp(json, json_copy) != 0) {
         printf("---> strcmp() failed; this is OK if unescaping was done in-place\n");
     }
